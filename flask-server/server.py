@@ -7,7 +7,7 @@ CORS(app)
 universal_total_quantity=180
 universal_carbonated_water=135
 
-def formula_lemon_line(bottles):
+def formula_lemon_lime(bottles):
     total_liquid=universal_total_quantity*bottles
     total_syrup_quantity=total_liquid*0.25
     return [
@@ -55,7 +55,7 @@ def formula_guava(bottles):
         {"ingredient": "Carbonated Water ", "quantity": total_liquid *0.75}
     ]
 
-def formula_ornage(bottles):
+def formula_orange(bottles):
    total_liquid=universal_total_quantity*bottles
    total_syrup_quantity=total_liquid*0.25
    return [
@@ -71,10 +71,10 @@ def formula_ornage(bottles):
     ]
 
 flavors = {
-    "lemonlime": formula_lemon_line,
+    "lemonlime": formula_lemon_lime,
     "mango": formula_mango,
     "guava": formula_guava,
-    "orange": formula_ornage,
+    "orange": formula_orange,
 
 }
 
