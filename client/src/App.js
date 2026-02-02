@@ -141,7 +141,7 @@ function App() {
         <button type="submit">Calculate</button>
       </form>
 
-      {result && result.ingredients && (
+      {result  && result.ingredients && (
         <div style={{ marginTop: "2rem" }}>
           <h2>
             {result.flavor} ({result.bottles} bottles)
@@ -159,11 +159,13 @@ function App() {
                   <td>{ing.ingredient_name}</td>
                   <td>{ing.amount.toFixed(2)} {ing.unit}</td>
                 </tr>
+                
               ))}
             </tbody>
           </table>
         </div>
-      )}
+      )
+      }
     </div>
   );
 }
