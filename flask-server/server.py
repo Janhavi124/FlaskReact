@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime
 
 app = Flask(__name__)
 CORS(app)
@@ -14,12 +15,15 @@ class Flavor(db.Model):
    __tablename__ = 'flavors'
    flavorid = db.Column(db.Integer, primary_key=True)
    flavorname = db.Column(db.String(100))
+   date_added = db.Column(db.Date)
    quantity = db.relationship('Quantity', back_populates='flavor', cascade='all, delete-orphan')
 
 class Ingredient(db.Model):
    __tablename__ = 'ingredients'
    ingredientid = db.Column(db.Integer, primary_key=True)
    ingredientname = db.Column(db.String(400))
+   availablequantity = db.Column(db.Float)
+   date_added = db.Column(db.Date)
    quantity = db.relationship('Quantity', back_populates='ingredient', cascade='all, delete-orphan')
 
 
@@ -28,6 +32,8 @@ class Quantity(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     flavorid = db.Column(db.Integer, db.ForeignKey('flavors.flavorid'))
     ingredientid = db.Column(db.Integer, db.ForeignKey('ingredients.ingredientid'))
+    date_added = db.Column(db.Date)
+    date_updated = db.Column(db.Date)
     baseamount = db.Column(db.Float)
     unit =db.Column(db.String(10))
 
@@ -35,72 +41,34 @@ class Quantity(db.Model):
     flavor = db.relationship('Flavor', back_populates='quantity')
     ingredient = db.relationship('Ingredient', back_populates='quantity')
 
+class batches(db.Model):
+    __tablename__ = 'batches'
+    batchid = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    batchnumber = db.Column(db.String(100), unique=True)
+    flavorid = db.Column(db.Integer, db.ForeignKey('flavors.flavorid'))
+    bottles = db.Column(db.Integer)
+    date_created = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    flavor = db.relationship('Flavor', backref='batches')
 
 universal_total_quantity=180
 universal_carbonated_water=135
 
-def formula_lemon_lime(bottles):
-    total_liquid=universal_total_quantity*bottles
-    total_syrup_quantity=total_liquid*0.25
-    return [
-        {"ingredient": "Invert Sugar,75 Brix", "quantity":total_syrup_quantity*0.6411},
-        {"ingredient": "Citric Acid Solution 20%", "quantity": total_syrup_quantity*0.055},
-        {"ingredient": "Sodium Benzoate, Food Grade", "quantity": total_syrup_quantity*0.0015},
-        {"ingredient": "Potassium Sorbate, Food Grade", "quantity": total_syrup_quantity*0.0006},
-        {"ingredient": "Glycerine, Food Grade", "quantity": total_syrup_quantity*0.04},
-        {"ingredient": "Yellow Synthetic 500-636 ", "quantity": total_syrup_quantity*0.0004},
-        {"ingredient": "blue 500-634", "quantity": total_syrup_quantity*0.00004},
-        {"ingredient": "Still Water ", "quantity": total_syrup_quantity*0.2534},
-        {"ingredient": "Lemon Lime Flavor ", "quantity": total_syrup_quantity*0.008},
-        {"ingredient": "Carbonated Water ", "quantity": total_liquid *0.75}
-    ]
+def generate_batch_number(flavorname, date_created):
+    # Format: DATE-FLAVOR-SERIAL (e.g., 20250203-Strawberry-001)
+    date_str = date_created.strftime('%Y%m%d')
+    
+    # Count batches for this flavor on this date
+    count = batches.query.filter(
+        db.func.date(batches.date_created) == date_created.date(),
+        batches.flavorid == Flavor.query.filter(Flavor.flavorname.ilike(flavorname)).first().flavorid
+    ).count()
+    
+    serial = str(count + 1).zfill(6)  # 001, 002, etc.
+    
+    return f"{date_str}-{flavorname}-{serial}"
 
-def formula_mango(bottles):
-     total_liquid=universal_total_quantity*bottles
-     total_syrup_quantity=total_liquid*0.25
-     return [
-        {"ingredient": "Invert Sugar,75 Brix", "quantity":total_syrup_quantity*0.6411},
-        {"ingredient": "Citric Acid Solution 20%", "quantity": total_syrup_quantity*0.05},
-        {"ingredient": "Sodium Benzoate, Food Grade", "quantity": total_syrup_quantity*0.0015},
-        {"ingredient": "Potassium Sorbate, Food Grade", "quantity": total_syrup_quantity*0.0006},
-        {"ingredient": "Glycerine, Food Grade", "quantity": total_syrup_quantity*0.04},
-        {"ingredient": "Yellow Synthetic 500-636 ", "quantity": total_syrup_quantity*0.0008},
-        {"ingredient": "Still Water ", "quantity": total_syrup_quantity*0.2508},
-        {"ingredient": "Mango, AF104357 ", "quantity": total_syrup_quantity*0.002},
-        {"ingredient": "Mango AF 106116 ", "quantity": total_syrup_quantity*0.006},
-        {"ingredient": "Carbonated Water ", "quantity": total_liquid *0.75}
-    ]
 
-def formula_guava(bottles):
-    total_liquid=universal_total_quantity*bottles
-    total_syrup_quantity=total_liquid*0.25
-    return [
-        {"ingredient": "Invert Sugar,75 Brix", "quantity":total_syrup_quantity*0.6411},
-        {"ingredient": "Citric Acid Solution 20%", "quantity": total_syrup_quantity*0.05},
-        {"ingredient": "Sodium Benzoate, Food Grade", "quantity": total_syrup_quantity*0.0015},
-        {"ingredient": "Potassium Sorbate, Food Grade", "quantity": total_syrup_quantity*0.00015},
-        {"ingredient": "Glycerine, Food Grade", "quantity": total_syrup_quantity*0.04},
-        {"ingredient": "Exberry Fruit Yellow 459377 Color ", "quantity": total_syrup_quantity*0.0008},
-        {"ingredient": "15330021 Exberry Vivid Red ", "quantity": total_syrup_quantity*0.0028},
-        {"ingredient": "Still Water", "quantity": total_syrup_quantity*0.2549},
-        {"ingredient": "Guava 600554", "quantity": total_syrup_quantity*0.0088},
-        {"ingredient": "Carbonated Water ", "quantity": total_liquid *0.75}
-    ]
-
-def formula_orange(bottles):
-   total_liquid=universal_total_quantity*bottles
-   total_syrup_quantity=total_liquid*0.25
-   return [
-        {"ingredient": "Invert Sugar,75 Brix", "quantity":total_syrup_quantity*0.6411},
-        {"ingredient": "Citric Acid Solution 20%", "quantity": total_syrup_quantity*0.05},
-        {"ingredient": "Sodium Benzoate, Food Grade", "quantity": total_syrup_quantity*0.0015},
-        {"ingredient": "Potassium Sorbate, Food Grade", "quantity": total_syrup_quantity*0.0006},
-        {"ingredient": "Glycerine, Food Grade", "quantity": total_syrup_quantity*0.04},
-        {"ingredient": "Orange 500-635 ", "quantity": total_syrup_quantity*0.006},
-        {"ingredient": "Orange, 210635 ", "quantity": total_syrup_quantity*0.008},
-        {"ingredient": "Still Water", "quantity": total_syrup_quantity*0.2528},
-        {"ingredient": "Carbonated Water ", "quantity": total_liquid *0.75}
-    ]
 
 @app.route('/flavors')
 def get_flavors():
@@ -155,51 +123,81 @@ def calculate_flavor():
         return jsonify({'error': f"Flavor '{flavorname}' not found"}), 404
 
     ingredients = []
+    insufficient_stock=[]
     for q in flavor.quantity:
+        availablequantity = q.ingredient.availablequantity
+        needquantity =  float(q.baseamount)*45*bottles
+        print(f"Checking {q.ingredient.ingredientname}: need {needquantity}, have {availablequantity}")  # ADD THIS
         ingredients.append({
             "ingredient_name": q.ingredient.ingredientname,
-            "amount": float(q.baseamount)*45*bottles,
+            "amount": needquantity,
             "unit": q.unit
         })
+  
+    
+        if availablequantity < needquantity:
+                insufficient_stock.append({
+                    "ingredient": q.ingredient.ingredientname,
+                    "needed": needquantity,
+                    "available": availablequantity
+                })
+    return jsonify({
+            "flavor": flavor.flavorname,
+            "bottles": bottles,
+            "ingredients": ingredients,
+            "can_produce": len(insufficient_stock) == 0,
+            "insufficient_stock": insufficient_stock
+        })
+
+
+@app.route('/save_batch', methods=['POST'])
+def save_batch():
+    data = request.get_json()
+    flavorname = data.get('flavorname')
+    bottles = data.get('bottles')
+
+    try:
+        bottles = int(bottles)
+    except (ValueError, TypeError):
+        return jsonify({'error': 'Invalid number of bottles'}), 400
+
+    flavor = Flavor.query.filter(Flavor.flavorname.ilike(flavorname)).first()
+    if not flavor:
+        return jsonify({'error': f"Flavor '{flavorname}' not found"}), 404
+
+    # Check stock again before saving
+    for q in flavor.quantity:
+        needed_amount = float(q.baseamount) * 45 * bottles
+        available = q.ingredient.availablequantity or 0
+        if available < needed_amount:
+            return jsonify({
+                'error': f'Insufficient stock for {q.ingredient.ingredientname}'
+            }), 400
+
+    # Deduct inventory
+    for q in flavor.quantity:
+        needed_amount = float(q.baseamount) * 45 * bottles
+        q.ingredient.availablequantity -= needed_amount
+
+    # Create and save batch
+    now = datetime.utcnow()
+    batch_number = generate_batch_number(flavorname, now)
+    
+    new_batch = batches(
+        batchnumber=batch_number,
+        flavorid=flavor.flavorid,
+        bottles=bottles,
+        date_created=now.date()
+    )
+    
+    db.session.add(new_batch)
+    db.session.commit()
 
     return jsonify({
-        "flavor": flavor.flavorname,
-        "bottles": bottles,
-        "ingredients": ingredients
+        "success": True,
+        "batch_number": batch_number,
+        "message": f"Batch {batch_number} saved successfully"
     })
-
-
-
-flavors = {
-    "lemonlime": formula_lemon_lime,
-    "mango": formula_mango,
-    "guava": formula_guava,
-    "orange": formula_orange,
-
-}
-
-
-@app.route("/calculate" , methods=['POST'])
-def calculate():
-     data = request.get_json()
-     num1 = data.get('num1')
-     operation = data.get('operation')
-
-     try:
-        num1 = float(num1)
-     except (ValueError, TypeError):
-        return jsonify({'error': 'Invalid number inputs'}), 400
-     formula_func = flavors.get(operation.lower())
-     if not formula_func:
-        return jsonify({'error': f"Flavor '{operation}' not supported"}), 400
-
-     formula = formula_func(num1)
-     result = {
-        "message": f"You want to make {num1} bottles of {operation}.",
-        "formula": formula
-    }
-
-     return jsonify(result)
 
 if __name__ == "__main__":
     app.run(debug=True)
