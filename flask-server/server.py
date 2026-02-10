@@ -51,8 +51,13 @@ class batches(db.Model):
     
     flavor = db.relationship('Flavor', backref='batches')
 
-universal_total_quantity=180
-universal_carbonated_water=135
+class Containers(db.Model):
+   __tablename__ = 'containers'
+   containerid = db.Column(db.Integer, primary_key=True)
+   containername = db.Column(db.String(100))
+   availablecount = db.Column(db.Integer)
+   date_updated = db.Column(db.Date)
+
 
 def generate_batch_number(flavorname, date_created):
     # Format: DATE-FLAVOR-SERIAL (e.g., 20250203-Strawberry-001)
@@ -75,6 +80,7 @@ def get_flavors():
     data = db.session.query(Flavor).all()
     result = [{"id": f.flavorid, "name": f.flavorname} for f in data]
     return jsonify(result)
+
 
 @app.route('/ingredients')
 def get_ingredients():
@@ -124,22 +130,31 @@ def calculate_flavor():
 
     ingredients = []
     insufficient_stock=[]
+    bottle_record = Containers.query.first()
+    bottlesavailable = bottle_record.availablecount
+    bottlesneeded = int(bottles)
+
     for q in flavor.quantity:
         availablequantity = q.ingredient.availablequantity
         needquantity =  float(q.baseamount)*45*bottles
-        print(f"Checking {q.ingredient.ingredientname}: need {needquantity}, have {availablequantity}")  # ADD THIS
+       
         ingredients.append({
             "ingredient_name": q.ingredient.ingredientname,
             "amount": needquantity,
             "unit": q.unit
         })
-  
     
         if availablequantity < needquantity:
                 insufficient_stock.append({
                     "ingredient": q.ingredient.ingredientname,
                     "needed": needquantity,
                     "available": availablequantity
+                })
+    if bottlesavailable < bottlesneeded:
+        insufficient_stock.append({
+                    "ingredient": "Bottles",
+                    "needed": bottlesneeded,
+                    "available": bottlesavailable
                 })
     return jsonify({
             "flavor": flavor.flavorname,
@@ -178,6 +193,11 @@ def save_batch():
     for q in flavor.quantity:
         needed_amount = float(q.baseamount) * 45 * bottles
         q.ingredient.availablequantity -= needed_amount
+    
+    #Deduct containers
+    bottle_record = Containers.query.first()  # Assuming you have one row tracking total bottles
+    if bottle_record:
+        bottle_record.availablecount -= bottles
 
     # Create and save batch
     now = datetime.utcnow()
