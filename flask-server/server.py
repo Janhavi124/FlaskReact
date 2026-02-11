@@ -8,7 +8,7 @@ load_dotenv()
 
 
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='build')
 CORS(app)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
