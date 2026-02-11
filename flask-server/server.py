@@ -6,14 +6,7 @@ from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 load_dotenv()
 
-{
-  "build": {
-    "builder": "NIXPACKS"
-  },
-  "deploy": {
-    "startCommand": "cd flask-server && gunicorn server:app"
-  }
-}
+
 
 app = Flask(__name__)
 CORS(app)
