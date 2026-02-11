@@ -219,5 +219,41 @@ def save_batch():
         "message": f"Batch {batch_number} saved successfully"
     })
 
+@app.route('/ingredients_inventory')
+def get_ingredients_inventory():
+    data = db.session.query(Ingredient).all()
+    result = [{"id": i.ingredientid, "name": i.ingredientname, "available": i.availablequantity} for i in data]
+    return jsonify(result)
+
+@app.route('/bottles_inventory')
+def get_bottles_inventory():
+    bottle = Containers.query.first()
+    return jsonify({"count": bottle.availablecount if bottle else 0})
+
+@app.route('/update_ingredient', methods=['POST'])
+def update_ingredient():
+    data = request.get_json()
+    ingredient_id = data.get('ingredientId')
+    new_quantity = data.get('newQuantity')
+    
+    ingredient = Ingredient.query.get(ingredient_id)
+    if ingredient:
+        ingredient.availablequantity = new_quantity
+        db.session.commit()
+        return jsonify({"success": True})
+    return jsonify({"error": "Ingredient not found"}), 404
+
+@app.route('/update_bottles', methods=['POST'])
+def update_bottles():
+    data = request.get_json()
+    new_count = data.get('newCount')
+    
+    bottle = Containers.query.first()
+    if bottle:
+        bottle.availablecount = new_count
+        db.session.commit()
+        return jsonify({"success": True})
+    return jsonify({"error": "Bottle record not found"}), 404
+
 if __name__ == "__main__":
     app.run(debug=True)

@@ -1,6 +1,6 @@
-/*import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 
-function App() {
+function MakeFlavor() {
   const [flavors, setFlavors] = useState([]);
   const [selectedFlavor, setSelectedFlavor] = useState("");
   const [bottles, setBottles] = useState("");
@@ -131,33 +131,6 @@ function App() {
       }
     </div>
   );
-}*/
-import { HashRouter as Router, Routes, Route } from 'react-router-dom';
-import MakeFlavor from './Pages/MakeFlavor'; 
-import { UpdateInventory } from './Pages/UpdateInventory';
-import { HomePage } from './Pages/HomePage';
-import { ViewInventory } from './Pages/ViewInventory';
-import { Layout } from './Layout';
-import '@picocss/pico/css/pico.min.css';
-import './App.css';
-
-
-
-function App(){
-  return (
-    <Router>
-      <Routes>
-        <Route element={<Layout/>}>
-        <Route path="/" element={<HomePage/>}/> 
-        <Route path="/UpdateInventory" element={<UpdateInventory/>}/> 
-        <Route path="/MakeFlavor" element={<MakeFlavor/>}/>
-        <Route path="/ViewInventory" element={<ViewInventory/>}/>
-      </Route>
-      </Routes>
-        
-    </Router>
-  )
 }
 
-export default App;
-
+export default MakeFlavor;
