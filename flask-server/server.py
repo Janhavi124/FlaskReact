@@ -8,7 +8,7 @@ load_dotenv()
 
 
 
-app = Flask(__name__, static_folder='build')
+app = Flask(__name__)
 CORS(app)
 database_url = os.getenv("DATABASE_URL")
 
@@ -20,6 +20,11 @@ app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app) #instantiate db object
+
+
+@app.route("/")
+def home():
+    return "App is running", 200
 
 class Flavor(db.Model):
    __tablename__ = 'flavors'
