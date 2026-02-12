@@ -8,7 +8,7 @@ load_dotenv()
 
 
 
-app = Flask(__name__, static_folder='../client/build', static_url_path='')
+app = Flask(__name__)
 CORS(app)
 database_url = os.getenv("DATABASE_URL")
 
@@ -21,14 +21,6 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app) #instantiate db object
 
-
-@app.route('/', defaults={'path': ''})
-@app.route('/<path:path>')
-def serve_react(path):
-    if path != "" and os.path.exists(f"client/build/{path}"):
-        return send_from_directory('client/build', path)
-    else:
-        return send_from_directory('client/build', 'index.html')
 
 class Flavor(db.Model):
    __tablename__ = 'flavors'
