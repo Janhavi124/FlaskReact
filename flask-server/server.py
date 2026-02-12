@@ -8,7 +8,11 @@ load_dotenv()
 
 
 
-app = Flask(__name__)
+app = Flask(
+    __name__,
+    static_folder="build/static",
+    template_folder="build"
+)
 CORS(app)
 database_url = os.getenv("DATABASE_URL")
 
@@ -18,6 +22,22 @@ if database_url and database_url.startswith("postgres://"):
 
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+
+
+@app.route("/")
+def serve():
+    return send_from_directory(app.template_folder, "index.html")
+
+# Serve React routes (VERY IMPORTANT for SPA)
+@app.route("/<path:path>")
+def static_proxy(path):
+    file_path = os.path.join(app.template_folder, path)
+
+    if os.path.exists(file_path):
+        return send_from_directory(app.template_folder, path)
+
+    return send_from_directory(app.template_folder, "index.html")
 
 db = SQLAlchemy(app) #instantiate db object
 
