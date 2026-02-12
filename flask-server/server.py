@@ -8,7 +8,7 @@ load_dotenv()
 
 
 
-app = Flask(__name__, static_folder='../client/build')
+app = Flask(__name__, static_folder='../client/build', static_url_path='')
 CORS(app)
 database_url = os.getenv("DATABASE_URL")
 
