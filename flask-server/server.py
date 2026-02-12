@@ -29,15 +29,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 def serve():
     return send_from_directory(app.template_folder, "index.html")
 
-# Serve React routes (VERY IMPORTANT for SPA)
-@app.route("/<path:path>")
-def static_proxy(path):
-    file_path = os.path.join(app.template_folder, path)
 
-    if os.path.exists(file_path):
-        return send_from_directory(app.template_folder, path)
-
-    return send_from_directory(app.template_folder, "index.html")
 
 db = SQLAlchemy(app) #instantiate db object
 
@@ -285,6 +277,17 @@ def update_bottles():
         db.session.commit()
         return jsonify({"success": True})
     return jsonify({"error": "Bottle record not found"}), 404
+
+
+# Serve React routes (VERY IMPORTANT for SPA)
+@app.route("/<path:path>")
+def static_proxy(path):
+    file_path = os.path.join(app.template_folder, path)
+
+    if os.path.exists(file_path):
+        return send_from_directory(app.template_folder, path)
+
+    return send_from_directory(app.template_folder, "index.html")
 
 if __name__ == "__main__":
     app.run(debug=True)
