@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
@@ -8,7 +8,7 @@ load_dotenv()
 
 
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='client/build')
 CORS(app)
 database_url = os.getenv("DATABASE_URL")
 
@@ -22,9 +22,13 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app) #instantiate db object
 
 
-@app.route("/")
-def home():
-    return "App is running", 200
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def serve_react(path):
+    if path != "" and os.path.exists(f"client/build/{path}"):
+        return send_from_directory('client/build', path)
+    else:
+        return send_from_directory('client/build', 'index.html')
 
 class Flavor(db.Model):
    __tablename__ = 'flavors'
