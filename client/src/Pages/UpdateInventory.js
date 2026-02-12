@@ -6,20 +6,20 @@ export function UpdateInventory() {
 
   // Fetch ingredients on load
   useEffect(() => {
-    fetch("http://localhost:5000/ingredients_inventory")
+    fetch("https://flaskreact-production-6221.up.railway.app/ingredients_inventory")
       .then((res) => res.json())
       .then((data) => setIngredients(data))
       .catch((err) => console.error("Error:", err));
 
     // Fetch bottle count
-    fetch("http://localhost:5000/bottles_inventory")
+    fetch("https://flaskreact-production-6221.up.railway.app/bottles_inventory")
       .then((res) => res.json())
       .then((data) => setBottles(data))
       .catch((err) => console.error("Error:", err));
   }, []);
 
   const updateIngredient = async (ingredientId, newQuantity) => {
-    await fetch("http://localhost:5000/update_ingredient", {
+    await fetch("https://flaskreact-production-6221.up.railway.app/update_ingredient", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ingredientId, newQuantity }),
@@ -28,7 +28,7 @@ export function UpdateInventory() {
   };
 
   const updateBottles = async (newCount) => {
-    await fetch("http://localhost:5000/update_bottles", {
+    await fetch("https://flaskreact-production-6221.up.railway.app/update_bottles", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ newCount }),
