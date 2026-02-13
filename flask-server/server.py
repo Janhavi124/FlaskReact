@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
@@ -8,11 +8,7 @@ load_dotenv()
 
 
 
-app = Flask(
-    __name__,
-    static_folder="build/static",
-    template_folder="build"
-)
+app = Flask(__name__)
 CORS(app, origins=["*"], supports_credentials=True)
 database_url = os.getenv("DATABASE_PUBLIC_URL")
 database_secret_key = os.getenv("SECRET_KEY")
@@ -24,13 +20,6 @@ if database_url and database_url.startswith("postgres://"):
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SECRET_KEY'] = database_secret_key
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-
-
-@app.route("/")
-def serve():
-    return send_from_directory(app.template_folder, "index.html")
-
 
 
 db = SQLAlchemy(app) #instantiate db object
@@ -280,16 +269,6 @@ def update_bottles():
         return jsonify({"success": True})
     return jsonify({"error": "Bottle record not found"}), 404
 
-
-# Serve React routes (VERY IMPORTANT for SPA)
-@app.route("/<path:path>")
-def static_proxy(path):
-    file_path = os.path.join(app.template_folder, path)
-
-    if os.path.exists(file_path):
-        return send_from_directory(app.template_folder, path)
-
-    return send_from_directory(app.template_folder, "index.html")
 
 if __name__ == "__main__":
     app.run(debug=True)
