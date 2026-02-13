@@ -14,7 +14,7 @@ app = Flask(
     template_folder="build"
 )
 CORS(app)
-database_url = os.getenv("DATABASE_URL")
+database_url = os.getenv("DATABASE_PUBLIC_URL")
 
 # Fix Railway's postgres:// to postgresql://
 if database_url and database_url.startswith("postgres://"):
