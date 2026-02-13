@@ -15,12 +15,14 @@ app = Flask(
 )
 CORS(app)
 database_url = os.getenv("DATABASE_PUBLIC_URL")
+database_secret_key = os.getenv("SECRET_KEY")
 
 # Fix Railway's postgres:// to postgresql://
 if database_url and database_url.startswith("postgres://"):
     database_url = database_url.replace("postgres://", "postgresql://", 1)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
+app.config['SECRET_KEY'] = database_secret_key
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 
