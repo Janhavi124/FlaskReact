@@ -13,7 +13,7 @@ app = Flask(
     static_folder="build/static",
     template_folder="build"
 )
-CORS(app)
+CORS(app, origins=["*"], supports_credentials=True)
 database_url = os.getenv("DATABASE_PUBLIC_URL")
 database_secret_key = os.getenv("SECRET_KEY")
 
