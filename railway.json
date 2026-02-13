@@ -3,6 +3,6 @@
     "builder": "NIXPACKS"
   },
   "deploy": {
-    "startCommand": "cd flask-server && gunicorn server:app"
+    "startCommand": "gunicorn server:app"
   }
 }
