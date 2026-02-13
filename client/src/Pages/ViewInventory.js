@@ -6,13 +6,13 @@ export function ViewInventory() {
 
   // Fetch ingredients on load
   useEffect(() => {
-    fetch("/api/https://flaskreact-production-6221.up.railway.app/ingredients_inventory")
+    fetch("https://flaskreact-production-6221.up.railway.app/ingredients_inventory")
       .then((res) => res.json())
       .then((data) => setIngredients(data))
       .catch((err) => console.error("Error:", err));
 
     // Fetch bottle count
-    fetch("/api/https://flaskreact-production-6221.up.railway.app/bottles_inventory")
+    fetch("https://flaskreact-production-6221.up.railway.app/bottles_inventory")
       .then((res) => res.json())
       .then((data) => setBottles(data))
       .catch((err) => console.error("Error:", err));
