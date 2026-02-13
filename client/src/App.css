@@ -36,3 +36,24 @@
     transform: rotate(360deg);
   }
 }
+
+/* Override navbar */
+nav {
+    background-color: #2c3e50; /* Change navbar color */
+    padding: 0.5rem 1rem; /* Make it smaller */
+}
+
+nav ul li a {
+    color: #ecf0f1; /* Link color */
+    font-size: 14px; /* Smaller text */
+    padding: 8px 15px; /* Adjust button size */
+}
+
+nav ul li a:hover {
+    background-color: #34495e; /* Hover effect */
+}
+
+nav ul li strong {
+    color: white;
+    font-size: 18px;
+}

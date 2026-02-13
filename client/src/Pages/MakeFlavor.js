@@ -1,6 +1,6 @@
-/*import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 
-function App() {
+function MakeFlavor() {
   const [flavors, setFlavors] = useState([]);
   const [selectedFlavor, setSelectedFlavor] = useState("");
   const [bottles, setBottles] = useState("");
@@ -9,7 +9,7 @@ function App() {
 
   // Fetch available flavors from Flask
   useEffect(() => {
-    fetch("http://localhost:5000/flavors")
+    fetch("https://flaskreact-production-6221.up.railway.app/flavors")
       .then((res) => res.json())
       .then((data) => setFlavors(data))
       .catch((err) => console.error("Error fetching flavors:", err));
@@ -17,7 +17,7 @@ function App() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const res = await fetch("http://localhost:5000/calculate_flavor", {
+    const res = await fetch("https://flaskreact-production-6221.up.railway.app/calculate_flavor", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ flavorname: selectedFlavor, bottles }),
@@ -28,7 +28,7 @@ function App() {
 
 };
     const handleSaveBatch = async () => {
-  const res = await fetch("http://localhost:5000/save_batch", {
+  const res = await fetch("https://flaskreact-production-6221.up.railway.app/save_batch", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ flavorname: selectedFlavor, bottles }),
@@ -131,33 +131,6 @@ function App() {
       }
     </div>
   );
-}*/
-import { HashRouter as Router, Routes, Route } from 'react-router-dom';
-import MakeFlavor from './Pages/MakeFlavor'; 
-import { UpdateInventory } from './Pages/UpdateInventory';
-import { HomePage } from './Pages/HomePage';
-import { ViewInventory } from './Pages/ViewInventory';
-import { Layout } from './Layout';
-import '@picocss/pico/css/pico.min.css';
-import './App.css';
-
-
-
-function App(){
-  return (
-    <Router>
-      <Routes>
-        <Route element={<Layout/>}>
-        <Route path="/" element={<HomePage/>}/> 
-        <Route path="/UpdateInventory" element={<UpdateInventory/>}/> 
-        <Route path="/MakeFlavor" element={<MakeFlavor/>}/>
-        <Route path="/ViewInventory" element={<ViewInventory/>}/>
-      </Route>
-      </Routes>
-        
-    </Router>
-  )
 }
 
-export default App;
-
+export default MakeFlavor;
