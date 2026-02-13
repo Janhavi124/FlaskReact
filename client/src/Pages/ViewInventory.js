@@ -51,7 +51,7 @@ export function ViewInventory() {
 }
 
 function IngredientRow({ ingredient, onUpdate }) {
-  const [newQty, setNewQty] = useState("");
+  /*const [newQty, setNewQty] = useState("");*/
 
   return (
     <tr>
@@ -63,7 +63,7 @@ function IngredientRow({ ingredient, onUpdate }) {
 }
 
 function BottleRow({ bottle, onUpdate }) {
-  const [newCount, setNewCount] = useState("");
+  /*const [newCount, setNewCount] = useState("");*/
 
   return (
     <div>
