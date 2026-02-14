@@ -9,7 +9,7 @@ load_dotenv()
 
 
 app = Flask(__name__)
-CORS(app, origins=["*"], supports_credentials=True)
+CORS(app, origins=["https://resplendent-trust-production.up.railway.app", "http://localhost:3000"], supports_credentials=True)
 database_url = os.getenv("DATABASE_PUBLIC_URL")
 database_secret_key = os.getenv("SECRET_KEY")
 
