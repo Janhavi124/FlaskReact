@@ -17,7 +17,7 @@ function MakeFlavor() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const res = await fetch("flaskreact-production-d646.up.railway.app/calculate_flavor", {
+    const res = await fetch("https://flaskreact-production-6221.up.railway.app/calculate_flavor", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ flavorname: selectedFlavor, bottles }),
@@ -28,7 +28,7 @@ function MakeFlavor() {
 
 };
     const handleSaveBatch = async () => {
-  const res = await fetch("flaskreact-production-d646.up.railway.app/save_batch", {
+  const res = await fetch("https://flaskreact-production-6221.up.railway.app/save_batch", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ flavorname: selectedFlavor, bottles }),
