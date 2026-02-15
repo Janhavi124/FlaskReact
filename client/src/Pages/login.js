@@ -18,8 +18,10 @@ export function Login() {
     });
     
     const data = await res.json();
+    console.log("Login response:", data); // ADD THIS
     
     if (data.success) {
+      console.log("Login successful, navigating...");
       navigate("/");
     } else {
       setError(data.error);

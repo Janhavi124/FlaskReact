@@ -25,6 +25,7 @@ function AppContent() {
       setAuthenticated(data.authenticated);
       
       if (!data.authenticated && !['/login', '/register'].includes(location.pathname)) {
+        console.log("Not authenticated, redirecting to login"); // ADD THIS
         navigate('/login');
       }
     });
