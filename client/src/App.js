@@ -1,5 +1,4 @@
-/*import React, { useEffect, useState } from "react";
-
+/*
 function App() {
   const [flavors, setFlavors] = useState([]);
   const [selectedFlavor, setSelectedFlavor] = useState("");
@@ -132,6 +131,8 @@ function App() {
     </div>
   );
 }*/
+import { useEffect, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 import MakeFlavor from './Pages/MakeFlavor'; 
 import { UpdateInventory } from './Pages/UpdateInventory';
