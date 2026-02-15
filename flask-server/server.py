@@ -11,7 +11,15 @@ load_dotenv()
 
 
 app = Flask(__name__)
-CORS(app, origins=["https://resplendent-trust-production.up.railway.app", "http://localhost:3000"], supports_credentials=True)
+
+CORS(app, 
+     resources={r"/*": {
+         "origins": ["https://resplendent-trust-production.up.railway.app", "http://localhost:3000"],
+         "methods": ["GET", "POST", "OPTIONS"],
+         "allow_headers": ["Content-Type"],
+         "supports_credentials": True
+     }})
+
 database_url = os.getenv("DATABASE_PUBLIC_URL")
 database_secret_key = os.getenv("SECRET_KEY")
 
@@ -22,6 +30,9 @@ if database_url and database_url.startswith("postgres://"):
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SECRET_KEY'] = database_secret_key
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SESSION_COOKIE_SECURE'] = True  # Required for HTTPS
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'None'  # Required for cross-origin
 
 
 db = SQLAlchemy(app) #instantiate db object
