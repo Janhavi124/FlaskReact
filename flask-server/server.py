@@ -15,13 +15,13 @@ load_dotenv()
 
 app = Flask(__name__)
 
-CORS(app, 
-     resources={r"/*": {
-         "origins": ["https://resplendent-trust-production.up.railway.app", "http://localhost:3000"],
-         "methods": ["GET", "POST", "OPTIONS"],
-         "allow_headers": ["Content-Type"],
-         "supports_credentials": True
-     }})
+CORS(app, resources={
+    r"/*": {
+        "origins": ["https://resplendent-trust-production.up.railway.app", "http://localhost:3000"],
+        "allow_headers": ["Content-Type", "Authorization"],
+        "methods": ["GET", "POST", "OPTIONS"]
+    }
+})
 
 database_url = os.getenv("DATABASE_PUBLIC_URL")
 database_secret_key = os.getenv("SECRET_KEY")
