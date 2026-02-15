@@ -137,6 +137,10 @@ import MakeFlavor from './Pages/MakeFlavor';
 import { UpdateInventory } from './Pages/UpdateInventory';
 import { HomePage } from './Pages/HomePage';
 import { ViewInventory } from './Pages/ViewInventory';
+import { Login } from './Pages/login';
+import { Register } from './Pages/register';
+
+
 import { Layout } from './Layout';
 import '@picocss/pico/css/pico.min.css';
 import './App.css';
@@ -152,6 +156,8 @@ function App(){
         <Route path="/UpdateInventory" element={<UpdateInventory/>}/> 
         <Route path="/MakeFlavor" element={<MakeFlavor/>}/>
         <Route path="/ViewInventory" element={<ViewInventory/>}/>
+        <Route path="/login" element={<Login/>}/>
+        <Route path="/register" element={<Register/>}/>
       </Route>
       </Routes>
         

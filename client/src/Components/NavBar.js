@@ -1,16 +1,51 @@
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
+import { useState, useEffect } from "react"
 
 export function NavBar() {
+    const [authenticated, setAuthenticated] = useState(false);
+    const [username, setUsername] = useState("");
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        fetch("https://flaskreact-production-d646.up.railway.app/check_auth", {
+            credentials: "include"
+        })
+        .then(res => res.json())
+        .then(data => {
+            setAuthenticated(data.authenticated);
+            if (data.authenticated) setUsername(data.username);
+        });
+    }, []);
+
+    const handleLogout = async () => {
+        await fetch("https://flaskreact-production-d646.up.railway.app/logout", {
+            method: "POST",
+            credentials: "include"
+        });
+        setAuthenticated(false);
+        navigate("/login");
+    };
+
     return (
         <nav>
             <ul>
-                <li><strong>Reviv Goli Soda</strong></li>
+                <li><strong>Flavor Manager</strong></li>
             </ul>
             <ul>
-                <li><Link to="/">Home</Link></li>
-                <li><Link to="/UpdateInventory">Update </Link></li>
-                <li><Link to="/MakeFlavor">Make </Link></li>
-                <li><Link to="/ViewInventory">View</Link></li>
+                {authenticated ? (
+                    <>
+                        <li>Welcome, {username}!</li>
+                        <li><Link to="/">Home</Link></li>
+                        <li><Link to="/UpdateInventory">Update Inventory</Link></li>
+                        <li><Link to="/MakeFlavor">Make Flavor</Link></li>
+                        <li><button onClick={handleLogout}>Logout</button></li>
+                    </>
+                ) : (
+                    <>
+                        <li><Link to="/login">Login</Link></li>
+                        <li><Link to="/register">Register</Link></li>
+                    </>
+                )}
             </ul>
         </nav>
     )
