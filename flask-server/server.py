@@ -2,12 +2,13 @@ import os
 from dotenv import load_dotenv
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from flask_sqlalchemy import SQLAlchemy
+#from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 import jwt
 from datetime import datetime, timedelta
 from functools import wraps
+from models import db, User, Containers, Quantity, Flavor, batches, Ingredient
 
 load_dotenv()
 
@@ -38,8 +39,9 @@ app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'None'  # Required for cross-origin
 
 
-db = SQLAlchemy(app) #instantiate db object
-
+#db = SQLAlchemy(app) #instantiate db object
+db.init_app(app)
+'''
 class User(db.Model):
     __tablename__ = 'Users'
     user_id = db.Column(db.Integer, primary_key=True)
@@ -103,7 +105,7 @@ class Containers(db.Model):
    containername = db.Column(db.String(100))
    availablecount = db.Column(db.Integer)
    date_updated = db.Column(db.Date)
-
+'''
 
 # JWT HELPER
 def generate_token(user_id):
