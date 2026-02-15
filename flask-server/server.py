@@ -4,8 +4,11 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
-from flask_login import LoginManager, login_user, logout_user, login_required, current_user, UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
+import jwt
+from datetime import datetime, timedelta
+from functools import wraps
+
 load_dotenv()
 
 
@@ -37,16 +40,94 @@ app.config['SESSION_COOKIE_SAMESITE'] = 'None'  # Required for cross-origin
 
 db = SQLAlchemy(app) #instantiate db object
 
-login_manager = LoginManager()
-login_manager.init_app(app)
-login_manager.login_view = 'login'
 
-@login_manager.user_loader
-def load_user(user_id):
-    return User.query.get(int(user_id))
+# Add this helper function to generate tokens
+def generate_token(user_id):
+    payload = {
+        'user_id': user_id,
+        'exp': datetime.utcnow() + timedelta(days=7)  # Token expires in 7 days
+    }
+    return jwt.encode(payload, app.config['SECRET_KEY'], algorithm='HS256')
+
+# Decorator to require token authentication
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = request.headers.get('Authorization')
+        
+        if not token:
+            return jsonify({'error': 'Token is missing'}), 401
+        
+        try:
+            # Remove "Bearer " prefix if present
+            if token.startswith('Bearer '):
+                token = token[7:]
+            
+            data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
+            current_user = User.query.get(data['user_id'])
+            
+            if not current_user:
+                return jsonify({'error': 'Invalid token'}), 401
+                
+        except jwt.ExpiredSignatureError:
+            return jsonify({'error': 'Token has expired'}), 401
+        except jwt.InvalidTokenError:
+            return jsonify({'error': 'Invalid token'}), 401
+        
+        return f(current_user, *args, **kwargs)
+    
+    return decorated
+
+@app.route('/register', methods=['POST'])
+def register():
+    data = request.get_json()
+    user_name = data.get('user_name')
+    user_email = data.get('user_email')
+    password = data.get('password')
+    
+    if User.query.filter_by(user_name=user_name).first():
+        return jsonify({'error': 'Username already exists'}), 400
+    
+    if User.query.filter_by(user_email=user_email).first():
+        return jsonify({'error': 'Email already exists'}), 400
+    
+    new_user = User(user_name=user_name, user_email=user_email)
+    new_user.set_password(password)
+    
+    db.session.add(new_user)
+    db.session.commit()
+    
+    return jsonify({'success': True, 'message': 'User registered successfully'})
+
+@app.route('/login', methods=['POST'])
+def login():
+    data = request.get_json()
+    user_name = data.get('user_name')
+    password = data.get('password')
+    
+    user = User.query.filter_by(user_name=user_name).first()
+    
+    if user and user.check_password(password):
+        token = generate_token(user.user_id)
+        return jsonify({
+            'success': True,
+            'token': token,
+            'user_name': user.user_name
+        })
+    
+    return jsonify({'error': 'Invalid username or password'}), 401
+
+@app.route('/check_auth', methods=['GET'])
+@token_required
+def check_auth(current_user):
+    return jsonify({
+        'authenticated': True,
+        'user_name': current_user.user_name
+    })
 
 
-class User(UserMixin, db.Model):
+
+class User(db.Model):
     __tablename__ = 'Users'
     user_id = db.Column(db.Integer, primary_key=True)
     user_name = db.Column(db.String(50), unique=True, nullable=False)

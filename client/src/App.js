@@ -17,23 +17,38 @@ function AppContent() {
   const location = useLocation();
 
   useEffect(() => {
-    fetch("https://flaskreact-production-d646.up.railway.app/check_auth", {
-      credentials: "include"
-    })
-    .then(res => res.json())
-    .then(data => {
-      setAuthenticated(data.authenticated);
-      
-      if (!data.authenticated && !['/login', '/register'].includes(location.pathname)) {
-        console.log("Not authenticated, redirecting to login"); // ADD THIS
-        navigate('/login');
-      }
-    });
-  }, [navigate, location]);
-
-  if (authenticated === null) {
-    return <div>Loading...</div>;
+  const token = localStorage.getItem('token');
+  
+  if (!token) {
+    setAuthenticated(false);
+    if (!['/login', '/register'].includes(location.pathname)) {
+      navigate('/login');
+    }
+    return;
   }
+
+  fetch("https://flaskreact-production-d646.up.railway.app/check_auth", {
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  })
+  .then(res => res.json())
+  .then(data => {
+    setAuthenticated(data.authenticated);
+    
+    if (!data.authenticated && !['/login', '/register'].includes(location.pathname)) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user_name');
+      navigate('/login');
+    }
+  })
+  .catch(() => {
+    setAuthenticated(false);
+    localStorage.removeItem('token');
+    localStorage.removeItem('user_name');
+    navigate('/login');
+  });
+}, [navigate, location]);
 
   return (
     <Routes>

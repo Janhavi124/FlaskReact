@@ -8,21 +8,39 @@ export function NavBar() {
     const location = useLocation();
 
     useEffect(() => {
+        const token = localStorage.getItem('token');
+        
+        if (!token) {
+            setAuthenticated(false);
+            return;
+        }
+
         fetch("https://flaskreact-production-d646.up.railway.app/check_auth", {
-            credentials: "include"
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
         })
         .then(res => res.json())
         .then(data => {
-            setAuthenticated(data.authenticated);
-            if (data.authenticated) setUsername(data.username);
+            if (data.authenticated) {
+                setAuthenticated(true);
+                setUsername(data.user_name);
+            } else {
+                setAuthenticated(false);
+                localStorage.removeItem('token');
+                localStorage.removeItem('user_name');
+            }
+        })
+        .catch(() => {
+            setAuthenticated(false);
+            localStorage.removeItem('token');
+            localStorage.removeItem('user_name');
         });
     }, [location]);
 
-    const handleLogout = async () => {
-        await fetch("https://flaskreact-production-d646.up.railway.app/logout", {
-            method: "POST",
-            credentials: "include"
-        });
+    const handleLogout = () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user_name');
         setAuthenticated(false);
         navigate("/login");
     };
