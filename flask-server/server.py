@@ -37,9 +37,9 @@ def load_user(user_id):
 
 class User(UserMixin, db.Model):
     __tablename__ = 'Users'
-    userid = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(50), unique=True, nullable=False)
-    email = db.Column(db.String(100), unique=True, nullable=False)
+    user_id = db.Column(db.Integer, primary_key=True)
+    user_name = db.Column(db.String(50), unique=True, nullable=False)
+    user_email = db.Column(db.String(100), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
     date_created = db.Column(db.DateTime, default=datetime.utcnow)
     
