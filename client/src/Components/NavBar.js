@@ -46,15 +46,16 @@ export function NavBar() {
     return (
         <nav>
             <ul>
-                <li><strong>Flavor Manager</strong></li>
+                <li><strong>Reviv</strong></li>
             </ul>
             <ul>
                 {authenticated ? (
                     <>
                         <li>Welcome, {user_name}!</li>
                         <li><Link to="/">Home</Link></li>
-                        <li><Link to="/UpdateInventory">Update Inventory</Link></li>
-                        <li><Link to="/MakeFlavor">Make Flavor</Link></li>
+                        <li><Link to="/UpdateInventory">Update </Link></li>
+                        <li><Link to="/MakeFlavor">Make </Link></li>
+                        <li><Link to="/ViewInventory">View</Link></li>
                         <li><button onClick={handleLogout}>Logout</button></li>
                     </>
                 ) : (
