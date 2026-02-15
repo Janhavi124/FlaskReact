@@ -4,6 +4,8 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
+from flask_login import LoginManager, login_user, logout_user, login_required, current_user, UserMixin
+from werkzeug.security import generate_password_hash, check_password_hash
 load_dotenv()
 
 
@@ -24,6 +26,31 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app) #instantiate db object
 
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
+
+class User(UserMixin, db.Model):
+    __tablename__ = 'users'
+    userid = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(50), unique=True, nullable=False)
+    email = db.Column(db.String(100), unique=True, nullable=False)
+    password_hash = db.Column(db.String(255), nullable=False)
+    date_created = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+    
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
+    
+    def get_id(self):
+        return str(self.userid)
 
 class Flavor(db.Model):
    __tablename__ = 'flavors'
@@ -71,6 +98,54 @@ class Containers(db.Model):
    containername = db.Column(db.String(100))
    availablecount = db.Column(db.Integer)
    date_updated = db.Column(db.Date)
+
+
+@app.route('/register', methods=['POST'])
+def register():
+    data = request.get_json()
+    username = data.get('username')
+    email = data.get('email')
+    password = data.get('password')
+    
+    if User.query.filter_by(username=username).first():
+        return jsonify({'error': 'Username already exists'}), 400
+    
+    if User.query.filter_by(email=email).first():
+        return jsonify({'error': 'Email already exists'}), 400
+    
+    new_user = User(username=username, email=email)
+    new_user.set_password(password)
+    
+    db.session.add(new_user)
+    db.session.commit()
+    
+    return jsonify({'success': True, 'message': 'User registered successfully'})
+
+@app.route('/login', methods=['POST'])
+def login():
+    data = request.get_json()
+    username = data.get('username')
+    password = data.get('password')
+    
+    user = User.query.filter_by(username=username).first()
+    
+    if user and user.check_password(password):
+        login_user(user)
+        return jsonify({'success': True, 'username': user.username})
+    
+    return jsonify({'error': 'Invalid username or password'}), 401
+
+@app.route('/logout', methods=['POST'])
+@login_required
+def logout():
+    logout_user()
+    return jsonify({'success': True, 'message': 'Logged out successfully'})
+
+@app.route('/check_auth')
+def check_auth():
+    if current_user.is_authenticated:
+        return jsonify({'authenticated': True, 'username': current_user.username})
+    return jsonify({'authenticated': False})
 
 
 def generate_batch_number(flavorname, date_created):
