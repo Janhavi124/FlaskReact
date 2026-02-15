@@ -3,7 +3,7 @@ import { useState, useEffect } from "react"
 
 export function NavBar() {
     const [authenticated, setAuthenticated] = useState(false);
-    const [username, setUsername] = useState("");
+    const [user_name, setUsername] = useState("");
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -34,7 +34,7 @@ export function NavBar() {
             <ul>
                 {authenticated ? (
                     <>
-                        <li>Welcome, {username}!</li>
+                        <li>Welcome, {user_name}!</li>
                         <li><Link to="/">Home</Link></li>
                         <li><Link to="/UpdateInventory">Update Inventory</Link></li>
                         <li><Link to="/MakeFlavor">Make Flavor</Link></li>

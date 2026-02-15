@@ -50,7 +50,7 @@ class User(UserMixin, db.Model):
         return check_password_hash(self.password_hash, password)
     
     def get_id(self):
-        return str(self.userid)
+        return str(self.user_id)
 
 class Flavor(db.Model):
    __tablename__ = 'flavors'
@@ -103,17 +103,17 @@ class Containers(db.Model):
 @app.route('/register', methods=['POST'])
 def register():
     data = request.get_json()
-    username = data.get('username')
-    email = data.get('email')
+    user_name = data.get('user_name')
+    user_email = data.get('user_email')
     password = data.get('password')
     
-    if User.query.filter_by(username=username).first():
-        return jsonify({'error': 'Username already exists'}), 400
+    if User.query.filter_by(user_name=user_name).first():
+        return jsonify({'error': 'user_name already exists'}), 400
     
-    if User.query.filter_by(email=email).first():
-        return jsonify({'error': 'Email already exists'}), 400
+    if User.query.filter_by(user_email=user_email).first():
+        return jsonify({'error': 'user_email already exists'}), 400
     
-    new_user = User(username=username, email=email)
+    new_user = User(user_name=user_name, user_email=user_email)
     new_user.set_password(password)
     
     db.session.add(new_user)
@@ -124,16 +124,16 @@ def register():
 @app.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
-    username = data.get('username')
+    user_name = data.get('user_name')
     password = data.get('password')
     
-    user = User.query.filter_by(username=username).first()
+    user = User.query.filter_by(user_name=user_name).first()
     
     if user and user.check_password(password):
         login_user(user)
-        return jsonify({'success': True, 'username': user.username})
+        return jsonify({'success': True, 'user_name': user.user_name})
     
-    return jsonify({'error': 'Invalid username or password'}), 401
+    return jsonify({'error': 'Invalid user_name or password'}), 401
 
 @app.route('/logout', methods=['POST'])
 @login_required
@@ -144,7 +144,7 @@ def logout():
 @app.route('/check_auth')
 def check_auth():
     if current_user.is_authenticated:
-        return jsonify({'authenticated': True, 'username': current_user.username})
+        return jsonify({'authenticated': True, 'user_name': current_user.user_name})
     return jsonify({'authenticated': False})
 
 

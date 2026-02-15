@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 export function Login() {
-  const [username, setUsername] = useState("");
+  const [user_name, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -14,7 +14,7 @@ export function Login() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify({ user_name, password }),
     });
     
     const data = await res.json();
@@ -35,7 +35,7 @@ export function Login() {
           <label>Username:</label>
           <input
             type="text"
-            value={username}
+            value={user_name}
             onChange={(e) => setUsername(e.target.value)}
             required
           />

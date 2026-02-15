@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 export function Register() {
-  const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
+  const [user_name, setUsername] = useState("");
+  const [user_email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -14,7 +14,7 @@ export function Register() {
     const res = await fetch("https://flaskreact-production-d646.up.railway.app/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, email, password }),
+      body: JSON.stringify({ user_name, user_email, password }),
     });
     
     const data = await res.json();
@@ -36,7 +36,7 @@ export function Register() {
           <label>Username:</label>
           <input
             type="text"
-            value={username}
+            value={user_name}
             onChange={(e) => setUsername(e.target.value)}
             required
           />
@@ -45,7 +45,7 @@ export function Register() {
           <label>Email:</label>
           <input
             type="email"
-            value={email}
+            value={user_email}
             onChange={(e) => setEmail(e.target.value)}
             required
           />
