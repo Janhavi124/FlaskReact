@@ -139,17 +139,37 @@ import { HomePage } from './Pages/HomePage';
 import { ViewInventory } from './Pages/ViewInventory';
 import { Login } from './Pages/login';
 import { Register } from './Pages/register';
-
-
 import { Layout } from './Layout';
 import '@picocss/pico/css/pico.min.css';
 import './App.css';
 
+function App() {
+  const [authenticated, setAuthenticated] = useState(null); // null = checking
+  const navigate = useNavigate();
+  const location = useLocation();
 
+  useEffect(() => {
+    fetch("https://flaskreact-production-d646.up.railway.app/check_auth", {
+      credentials: "include"
+    })
+    .then(res => res.json())
+    .then(data => {
+      setAuthenticated(data.authenticated);
+      
+      // If not authenticated and not on login/register, redirect to login
+      if (!data.authenticated && !['/login', '/register'].includes(location.pathname)) {
+        navigate('/login');
+      }
+    });
+  }, [navigate, location]);
 
-function App(){
+  // Show loading while checking auth
+  if (authenticated === null) {
+    return <div>Loading...</div>;
+  }
+
   return (
-    <Router>
+     <Router>
       <Routes>
         <Route element={<Layout/>}>
         <Route path="/" element={<HomePage/>}/> 
@@ -162,8 +182,9 @@ function App(){
       </Routes>
         
     </Router>
-  )
+  );
 }
+
 
 export default App;
 

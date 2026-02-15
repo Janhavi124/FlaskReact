@@ -20,7 +20,7 @@ export function Login() {
     const data = await res.json();
     
     if (data.success) {
-      navigate("/");
+      navigate("/Home");
     } else {
       setError(data.error);
     }
