@@ -33,8 +33,6 @@ export function NavBar() {
         })
         .catch(() => {
             setAuthenticated(false);
-            localStorage.removeItem('token');
-            localStorage.removeItem('user_name');
         });
     }, [location]);
 

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 import MakeFlavor from './Pages/MakeFlavor'; 
@@ -12,43 +12,40 @@ import '@picocss/pico/css/pico.min.css';
 import './App.css';
 
 function AppContent() {
-  const [authenticated, setAuthenticated] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
-  const token = localStorage.getItem('token');
-  
-  if (!token) {
-    setAuthenticated(false);
-    if (!['/login', '/register'].includes(location.pathname)) {
-      navigate('/login');
-    }
-    return;
-  }
-
-  fetch("https://flaskreact-production-d646.up.railway.app/check_auth", {
-    headers: {
-      'Authorization': `Bearer ${token}`
-    }
-  })
-  .then(res => res.json())
-  .then(data => {
-    setAuthenticated(data.authenticated);
+    const token = localStorage.getItem('token');
     
-    if (!data.authenticated && !['/login', '/register'].includes(location.pathname)) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user_name');
-      navigate('/login');
+    if (!token) {
+      if (!['/login', '/register'].includes(location.pathname)) {
+        navigate('/login');
+      }
+      return;
     }
-  })
-  .catch(() => {
-    setAuthenticated(false);
-    localStorage.removeItem('token');
-    localStorage.removeItem('user_name');
-    navigate('/login');
-  });
-}, [navigate, location]);
+
+    fetch("https://flaskreact-production-d646.up.railway.app/check_auth", {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (!data.authenticated && !['/login', '/register'].includes(location.pathname)) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user_name');
+        navigate('/login');
+      }
+    })
+    .catch(() => {
+      if (!['/login', '/register'].includes(location.pathname)) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user_name');
+        navigate('/login');
+      }
+    });
+  }, [navigate, location]);
 
   return (
     <Routes>

@@ -40,93 +40,6 @@ app.config['SESSION_COOKIE_SAMESITE'] = 'None'  # Required for cross-origin
 
 db = SQLAlchemy(app) #instantiate db object
 
-
-# Add this helper function to generate tokens
-def generate_token(user_id):
-    payload = {
-        'user_id': user_id,
-        'exp': datetime.utcnow() + timedelta(days=7)  # Token expires in 7 days
-    }
-    return jwt.encode(payload, app.config['SECRET_KEY'], algorithm='HS256')
-
-# Decorator to require token authentication
-def token_required(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        token = request.headers.get('Authorization')
-        
-        if not token:
-            return jsonify({'error': 'Token is missing'}), 401
-        
-        try:
-            # Remove "Bearer " prefix if present
-            if token.startswith('Bearer '):
-                token = token[7:]
-            
-            data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
-            current_user = User.query.get(data['user_id'])
-            
-            if not current_user:
-                return jsonify({'error': 'Invalid token'}), 401
-                
-        except jwt.ExpiredSignatureError:
-            return jsonify({'error': 'Token has expired'}), 401
-        except jwt.InvalidTokenError:
-            return jsonify({'error': 'Invalid token'}), 401
-        
-        return f(current_user, *args, **kwargs)
-    
-    return decorated
-
-@app.route('/register', methods=['POST'])
-def register():
-    data = request.get_json()
-    user_name = data.get('user_name')
-    user_email = data.get('user_email')
-    password = data.get('password')
-    
-    if User.query.filter_by(user_name=user_name).first():
-        return jsonify({'error': 'Username already exists'}), 400
-    
-    if User.query.filter_by(user_email=user_email).first():
-        return jsonify({'error': 'Email already exists'}), 400
-    
-    new_user = User(user_name=user_name, user_email=user_email)
-    new_user.set_password(password)
-    
-    db.session.add(new_user)
-    db.session.commit()
-    
-    return jsonify({'success': True, 'message': 'User registered successfully'})
-
-@app.route('/login', methods=['POST'])
-def login():
-    data = request.get_json()
-    user_name = data.get('user_name')
-    password = data.get('password')
-    
-    user = User.query.filter_by(user_name=user_name).first()
-    
-    if user and user.check_password(password):
-        token = generate_token(user.user_id)
-        return jsonify({
-            'success': True,
-            'token': token,
-            'user_name': user.user_name
-        })
-    
-    return jsonify({'error': 'Invalid username or password'}), 401
-
-@app.route('/check_auth', methods=['GET'])
-@token_required
-def check_auth(current_user):
-    return jsonify({
-        'authenticated': True,
-        'user_name': current_user.user_name
-    })
-
-
-
 class User(db.Model):
     __tablename__ = 'Users'
     user_id = db.Column(db.Integer, primary_key=True)
@@ -192,6 +105,42 @@ class Containers(db.Model):
    date_updated = db.Column(db.Date)
 
 
+# JWT HELPER
+def generate_token(user_id):
+    payload = {
+        'user_id': user_id,
+        'exp': datetime.utcnow() + timedelta(days=7)
+    }
+    return jwt.encode(payload, app.config['SECRET_KEY'], algorithm='HS256')
+
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = request.headers.get('Authorization')
+        
+        if not token:
+            return jsonify({'error': 'Token is missing'}), 401
+        
+        try:
+            if token.startswith('Bearer '):
+                token = token[7:]
+            
+            data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
+            current_user = User.query.get(data['user_id'])
+            
+            if not current_user:
+                return jsonify({'error': 'Invalid token'}), 401
+                
+        except jwt.ExpiredSignatureError:
+            return jsonify({'error': 'Token has expired'}), 401
+        except jwt.InvalidTokenError:
+            return jsonify({'error': 'Invalid token'}), 401
+        
+        return f(current_user, *args, **kwargs)
+    
+    return decorated
+
+# AUTH ROUTES
 @app.route('/register', methods=['POST'])
 def register():
     data = request.get_json()
@@ -200,10 +149,10 @@ def register():
     password = data.get('password')
     
     if User.query.filter_by(user_name=user_name).first():
-        return jsonify({'error': 'user_name already exists'}), 400
+        return jsonify({'error': 'Username already exists'}), 400
     
     if User.query.filter_by(user_email=user_email).first():
-        return jsonify({'error': 'user_email already exists'}), 400
+        return jsonify({'error': 'Email already exists'}), 400
     
     new_user = User(user_name=user_name, user_email=user_email)
     new_user.set_password(password)
@@ -222,22 +171,24 @@ def login():
     user = User.query.filter_by(user_name=user_name).first()
     
     if user and user.check_password(password):
-        login_user(user)
-        return jsonify({'success': True, 'user_name': user.user_name})
+        token = generate_token(user.user_id)
+        return jsonify({
+            'success': True,
+            'token': token,
+            'user_name': user.user_name
+        })
     
-    return jsonify({'error': 'Invalid user_name or password'}), 401
+    return jsonify({'error': 'Invalid username or password'}), 401
 
-@app.route('/logout', methods=['POST'])
-@login_required
-def logout():
-    logout_user()
-    return jsonify({'success': True, 'message': 'Logged out successfully'})
+@app.route('/check_auth', methods=['GET'])
+@token_required
+def check_auth(current_user):
+    return jsonify({
+        'authenticated': True,
+        'user_name': current_user.user_name
+    })
 
-@app.route('/check_auth')
-def check_auth():
-    if current_user.is_authenticated:
-        return jsonify({'authenticated': True, 'user_name': current_user.user_name})
-    return jsonify({'authenticated': False})
+# Keep all your other routes below (flavors, ingredients, etc.)
 
 
 def generate_batch_number(flavorname, date_created):

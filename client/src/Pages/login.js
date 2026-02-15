@@ -8,24 +8,24 @@ export function Login() {
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
-  e.preventDefault();
-  
-  const res = await fetch("https://flaskreact-production-d646.up.railway.app/login", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ user_name, password }),
-  });
-  
-  const data = await res.json();
-  
-  if (data.success) {
-    localStorage.setItem('token', data.token);
-    localStorage.setItem('user_name', data.user_name);
-    navigate("/MakeFlavor");
-  } else {
-    setError(data.error);
-  }
-};
+    e.preventDefault();
+    
+    const res = await fetch("https://flaskreact-production-d646.up.railway.app/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ user_name, password }),
+    });
+    
+    const data = await res.json();
+    
+    if (data.success) {
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user_name', data.user_name);
+      navigate("/MakeFlavor");
+    } else {
+      setError(data.error);
+    }
+  };
 
   return (
     <div style={{ padding: "2rem", maxWidth: "400px", margin: "auto" }}>
