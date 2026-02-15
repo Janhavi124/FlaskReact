@@ -1,10 +1,11 @@
-import { Link, useNavigate } from "react-router-dom"
+import { Link, useNavigate, useLocation } from "react-router-dom"
 import { useState, useEffect } from "react"
 
 export function NavBar() {
     const [authenticated, setAuthenticated] = useState(false);
     const [user_name, setUsername] = useState("");
     const navigate = useNavigate();
+    const location = useLocation();
 
     useEffect(() => {
         fetch("https://flaskreact-production-d646.up.railway.app/check_auth", {
@@ -15,7 +16,7 @@ export function NavBar() {
             setAuthenticated(data.authenticated);
             if (data.authenticated) setUsername(data.username);
         });
-    }, []);
+    }, [location]);
 
     const handleLogout = async () => {
         await fetch("https://flaskreact-production-d646.up.railway.app/logout", {
