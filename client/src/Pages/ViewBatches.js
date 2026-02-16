@@ -5,8 +5,8 @@ export function ViewBatches() {
  
   // Fetch ingredients on load
    useEffect(() => {
-  fetch("https://flaskreact-production-d646.up.railway.app/batches_list")
-  //fetch("http://localhost:5000/batches_list")
+  //fetch("https://flaskreact-production-d646.up.railway.app/batches_list")
+  fetch("http://localhost:5000/batches_list")
     .then((res) => res.json())
     .then((data) => {
       console.log("API DATA:", data); 
@@ -27,6 +27,7 @@ export function ViewBatches() {
             <th>Batch Number</th>
             <th>Flavor ID</th>
             <th>Flavor Name</th>
+            <th>User id</th>
             <th>Bottles</th>
             <th>Date Created</th>
           </tr>
@@ -55,6 +56,7 @@ function BatchIDRow({ batches }) {
       <td>{batches.batchnumber}</td>
       <td>{batches.flavorid}</td>
       <td>{batches.flavorname}</td>
+      <td>{batches.user_id}</td>
       <td>{batches.bottles}</td>
       <td>{batches.date_created}</td>
       

@@ -234,7 +234,9 @@ def calculate_flavor():
 
 
 @app.route('/save_batch', methods=['POST'])
-def save_batch():
+@token_required
+def save_batch(current_user):
+    print("Inside save_batch, current_user:", current_user)
     data = request.get_json()
     flavorname = data.get('flavorname')
     bottles = data.get('bottles')
@@ -275,6 +277,7 @@ def save_batch():
         batchnumber=batch_number,
         flavorid=flavor.flavorid,
         bottles=bottles,
+        user_id= current_user.user_id,
         date_created=now.date()
     )
     
@@ -298,6 +301,7 @@ def get_batches_list():
             "batchnumber": batch.batchnumber,
             "flavorid": batch.flavorid,
             "flavorname": flavor.flavorname,
+            "user_id": batch.user_id,
             "bottles": batch.bottles,
             "date_created": batch.date_created
         })

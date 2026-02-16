@@ -57,9 +57,11 @@ class batches(db.Model):
     batchnumber = db.Column(db.String(100), unique=True)
     flavorid = db.Column(db.Integer, db.ForeignKey('flavors.flavorid'))
     bottles = db.Column(db.Integer)
+    user_id = db.Column(db.Integer, db.ForeignKey('Users.user_id'))
     date_created = db.Column(db.DateTime, default=datetime.utcnow)
     
     flavor = db.relationship('Flavor', backref='batches')
+    user = db.relationship('User', backref='batches')
 
 class Containers(db.Model):
    __tablename__ = 'containers'
