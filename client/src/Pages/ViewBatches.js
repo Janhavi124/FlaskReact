@@ -5,8 +5,8 @@ export function ViewBatches() {
  
   // Fetch ingredients on load
    useEffect(() => {
-  //fetch("https://flaskreact-production-d646.up.railway.app/batches_list")
-  fetch("http://localhost:5000/batches_list")
+  fetch("https://flaskreact-production-d646.up.railway.app/batches_list")
+  //fetch("http://localhost:5000/batches_list")
     .then((res) => res.json())
     .then((data) => {
       console.log("API DATA:", data); 
