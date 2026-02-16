@@ -9,6 +9,9 @@ import jwt
 from datetime import datetime, timedelta
 from functools import wraps
 from models import db, User, Containers, Quantity, Flavor, batches, Ingredient
+import pandas as pd
+from flask import send_file
+from io import BytesIO
 
 load_dotenv()
 
@@ -342,6 +345,37 @@ def update_bottles():
         db.session.commit()
         return jsonify({"success": True})
     return jsonify({"error": "Bottle record not found"}), 404
+
+@app.route("/export_batches", methods=["GET"])
+def export_batches():
+    batchesList = db.session.query(batches).all()
+
+    data = []
+    for batch in batchesList:
+        data.append({
+            "Batch ID": batch.batchid,
+            "Batch Number": batch.batchnumber,
+            "Flavor ID": batch.flavorid,
+            "Flavor": batch.flavor.flavorname,
+            "User": batch.user.user_id,
+            "Bottles": batch.bottles,
+            "Date Created": batch.date_created
+        })
+
+    
+    df = pd.DataFrame(data)
+
+    output = BytesIO()
+    df.to_excel(output, index=False, engine="openpyxl")
+    output.seek(0)
+
+    return send_file(
+        output,
+        as_attachment=True,
+        download_name="batches.xlsx",
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+
 
 
 if __name__ == "__main__":

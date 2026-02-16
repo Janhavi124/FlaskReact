@@ -15,6 +15,27 @@ export function ViewBatches() {
     .catch((err) => console.error("Error:", err));
 }, []);
 
+const handleExport = async () => {
+  const token = localStorage.getItem("token");
+
+  const response = await fetch("https://flaskreact-production-d646.up.railway.app/export_batches", {
+    headers: {
+      "Authorization": `Bearer ${token}`
+    }
+  });
+
+  const blob = await response.blob();
+  const url = window.URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "batches.xlsx";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+};
+
+
   return (
     <div style={{ padding: "2rem" }}>
       <h1>View Batches</h1>
@@ -43,9 +64,21 @@ export function ViewBatches() {
         </tbody>
       </table>
 
+      <button
+  onClick={handleExport}
+  style={{
+    marginTop: "1rem",
+    padding: "0.5rem 0.8rem"
+  }}
+>
+  Export All Batches to Excel
+</button>
+
     </div>
   );
 }
+
+
 
 function BatchIDRow({ batches }) {
   /*const [newQty, setNewQty] = useState("");*/
