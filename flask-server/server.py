@@ -377,6 +377,31 @@ def export_batches():
     )
 
 
+@app.route("/export_inventory", methods=["GET"])
+def export_inventory():
+    ingredientList = db.session.query(Ingredient).all()
+
+    data = []
+    for ing in ingredientList:
+        data.append({
+            "Ingredient": ing.ingredientname,
+            "Quantity": ing.availablequantity
+        })
+
+    
+    df = pd.DataFrame(data)
+
+    output = BytesIO()
+    df.to_excel(output, index=False, engine="openpyxl")
+    output.seek(0)
+
+    return send_file(
+        output,
+        as_attachment=True,
+        download_name="ingredients.xlsx",
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+
 
 if __name__ == "__main__":
     app.run(debug=True)

@@ -18,6 +18,25 @@ export function ViewInventory() {
       .catch((err) => console.error("Error:", err));
   }, []);
 
+const handleExport = async () => {
+  const token = localStorage.getItem("token");
+
+  const response = await fetch("https://flaskreact-production-d646.up.railway.app/export_inventory", {
+    headers: {
+      "Authorization": `Bearer ${token}`
+    }
+  });
+
+  const blob = await response.blob();
+  const url = window.URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "inventory.xlsx";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+};
 
 
   return (
@@ -46,6 +65,16 @@ export function ViewInventory() {
       {bottles && (
         <BottleRow bottle={bottles} />
       )}
+
+          <button
+  onClick={handleExport}
+  style={{
+    marginTop: "1rem",
+    padding: "0.5rem 0.8rem"
+  }}
+>
+  Export All Inventory to Excel
+</button>
     </div>
   );
 }
