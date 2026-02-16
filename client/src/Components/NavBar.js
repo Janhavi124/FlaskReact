@@ -56,6 +56,7 @@ export function NavBar() {
                         <li><Link to="/UpdateInventory">Update </Link></li>
                         <li><Link to="/MakeFlavor">Make </Link></li>
                         <li><Link to="/ViewInventory">View</Link></li>
+                        <li><Link to="/ViewBatches">Batches</Link></li>
                         <li><button onClick={handleLogout}>Logout</button></li>
                     </>
                 ) : (

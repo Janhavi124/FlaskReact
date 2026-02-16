@@ -5,6 +5,7 @@ import MakeFlavor from './Pages/MakeFlavor';
 import { UpdateInventory } from './Pages/UpdateInventory';
 import { HomePage } from './Pages/HomePage';
 import { ViewInventory } from './Pages/ViewInventory';
+import { ViewBatches } from "./Pages/ViewBatches";
 import { Login } from './Pages/login';
 import { Register } from './Pages/register';
 import { Layout } from './Layout';
@@ -54,8 +55,10 @@ function AppContent() {
         <Route path="/UpdateInventory" element={<UpdateInventory/>}/> 
         <Route path="/MakeFlavor" element={<MakeFlavor/>}/>
         <Route path="/ViewInventory" element={<ViewInventory/>}/>
+        <Route path="/ViewBatches" element={<ViewBatches/>}/>
         <Route path="/login" element={<Login/>}/>
         <Route path="/register" element={<Register/>}/>
+        
       </Route>
     </Routes>
   );

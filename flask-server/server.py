@@ -41,71 +41,6 @@ app.config['SESSION_COOKIE_SAMESITE'] = 'None'  # Required for cross-origin
 
 #db = SQLAlchemy(app) #instantiate db object
 db.init_app(app)
-'''
-class User(db.Model):
-    __tablename__ = 'Users'
-    user_id = db.Column(db.Integer, primary_key=True)
-    user_name = db.Column(db.String(50), unique=True, nullable=False)
-    user_email = db.Column(db.String(100), unique=True, nullable=False)
-    password_hash = db.Column(db.String(255), nullable=False)
-    date_created = db.Column(db.DateTime, default=datetime.utcnow)
-    
-    def set_password(self, password):
-        self.password_hash = generate_password_hash(password)
-    
-    def check_password(self, password):
-        return check_password_hash(self.password_hash, password)
-    
-    def get_id(self):
-        return str(self.user_id)
-
-class Flavor(db.Model):
-   __tablename__ = 'flavors'
-   flavorid = db.Column(db.Integer, primary_key=True)
-   flavorname = db.Column(db.String(100))
-   date_added = db.Column(db.Date)
-   quantity = db.relationship('Quantity', back_populates='flavor', cascade='all, delete-orphan')
-
-class Ingredient(db.Model):
-   __tablename__ = 'ingredients'
-   ingredientid = db.Column(db.Integer, primary_key=True)
-   ingredientname = db.Column(db.String(400))
-   availablequantity = db.Column(db.Float)
-   date_added = db.Column(db.Date)
-   quantity = db.relationship('Quantity', back_populates='ingredient', cascade='all, delete-orphan')
-
-
-class Quantity(db.Model):
-    __tablename__ = 'quantity'
-    id = db.Column(db.Integer, primary_key=True)
-    flavorid = db.Column(db.Integer, db.ForeignKey('flavors.flavorid'))
-    ingredientid = db.Column(db.Integer, db.ForeignKey('ingredients.ingredientid'))
-    date_added = db.Column(db.Date)
-    date_updated = db.Column(db.Date)
-    baseamount = db.Column(db.Float)
-    unit =db.Column(db.String(10))
-
-    # Relationships (many-to-one)
-    flavor = db.relationship('Flavor', back_populates='quantity')
-    ingredient = db.relationship('Ingredient', back_populates='quantity')
-
-class batches(db.Model):
-    __tablename__ = 'batches'
-    batchid = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    batchnumber = db.Column(db.String(100), unique=True)
-    flavorid = db.Column(db.Integer, db.ForeignKey('flavors.flavorid'))
-    bottles = db.Column(db.Integer)
-    date_created = db.Column(db.DateTime, default=datetime.utcnow)
-    
-    flavor = db.relationship('Flavor', backref='batches')
-
-class Containers(db.Model):
-   __tablename__ = 'containers'
-   containerid = db.Column(db.Integer, primary_key=True)
-   containername = db.Column(db.String(100))
-   availablecount = db.Column(db.Integer)
-   date_updated = db.Column(db.Date)
-'''
 
 # JWT HELPER
 def generate_token(user_id):
@@ -206,7 +141,6 @@ def generate_batch_number(flavorname, date_created):
     serial = str(count + 1).zfill(6)  # 001, 002, etc.
     
     return f"{date_str}-{flavorname}-{serial}"
-
 
 
 @app.route('/flavors')
@@ -353,13 +287,23 @@ def save_batch():
         "message": f"Batch {batch_number} saved successfully"
     })
 
-@app.route('/ingredients_inventory')
+@app.route('/batches_list', methods=['GET'])
+def get_batches_list():
+    data = db.session.query(batches).all()
+    result = [{"batchid": i.batchid, 
+               "batchnumber": i.batchnumber, 
+               "flavorid": i.flavorid,
+               "bottles": i.bottles,
+               "date_created": i.date_created} for i in data]
+    return jsonify(result)
+
+@app.route('/ingredients_inventory', methods=['GET'])
 def get_ingredients_inventory():
     data = db.session.query(Ingredient).all()
     result = [{"id": i.ingredientid, "name": i.ingredientname, "available": i.availablequantity} for i in data]
     return jsonify(result)
 
-@app.route('/bottles_inventory')
+@app.route('/bottles_inventory', methods=['GET'])
 def get_bottles_inventory():
     bottle = Containers.query.first()
     return jsonify({"count": bottle.availablecount if bottle else 0})
