@@ -48,7 +48,7 @@ const handleExport = async () => {
             <th>Batch Number</th>
             <th>Flavor ID</th>
             <th>Flavor Name</th>
-            <th>User id</th>
+            <th>User Name</th>
             <th>Bottles</th>
             <th>Date Created</th>
           </tr>
@@ -89,7 +89,7 @@ function BatchIDRow({ batches }) {
       <td>{batches.batchnumber}</td>
       <td>{batches.flavorid}</td>
       <td>{batches.flavorname}</td>
-      <td>{batches.user_id}</td>
+      <td>{batches.user_name}</td>
       <td>{batches.bottles}</td>
       <td>{batches.date_created}</td>
       

@@ -296,17 +296,17 @@ def save_batch(current_user):
 @app.route('/batches_list', methods=['GET'])
 def get_batches_list():
     
-    data = db.session.query(batches,Flavor).join(Flavor).all()
+    data = db.session.query(batches).all()
     result = []
-    for batch, flavor in data:
+    for d in data:
         result.append({
-            "batchid": batch.batchid,
-            "batchnumber": batch.batchnumber,
-            "flavorid": batch.flavorid,
-            "flavorname": flavor.flavorname,
-            "user_id": batch.user_id,
-            "bottles": batch.bottles,
-            "date_created": batch.date_created
+            "batchid": d.batchid,
+            "batchnumber": d.batchnumber,
+            "flavorid": d.flavorid,
+            "flavorname": d.flavor.flavorname,
+            "user_name": d.user.user_name,
+            "bottles": d.bottles,
+            "date_created": d.date_created
         })
     return jsonify(result)
 
