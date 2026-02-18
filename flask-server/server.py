@@ -302,7 +302,6 @@ def get_batches_list():
         result.append({
             "batchid": d.batchid,
             "batchnumber": d.batchnumber,
-            "flavorid": d.flavorid,
             "flavorname": d.flavor.flavorname,
             "user_name": d.user.user_name,
             "bottles": d.bottles,
