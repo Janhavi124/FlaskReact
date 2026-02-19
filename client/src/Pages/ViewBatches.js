@@ -70,7 +70,7 @@ const handleExport = async () => {
     padding: "0.5rem 0.8rem"
   }}
 >
-  Export All Batches to Excel
+  Export
 </button>
 
     </div>
