@@ -10,7 +10,7 @@ export function Login() {
   const handleLogin = async (e) => {
     e.preventDefault();
     
-    const res = await fetch("https://flaskreact-production-d646.up.railway.app/login", {
+    const res = await fetch("http://localhost:5000/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ user_name, password }),

@@ -26,7 +26,7 @@ function AppContent() {
       return;
     }
 
-    fetch("https://flaskreact-production-d646.up.railway.app/check_auth", {
+    fetch("http://localhost:5000/check_auth", {
       headers: {
         'Authorization': `Bearer ${token}`
       }

@@ -6,13 +6,13 @@ export function ViewInventory() {
 
   // Fetch ingredients on load
   useEffect(() => {
-    fetch("https://flaskreact-production-d646.up.railway.app/ingredients_inventory")
+    fetch("http://localhost:5000/ingredients_inventory")
       .then((res) => res.json())
       .then((data) => setIngredients(data))
       .catch((err) => console.error("Error:", err));
 
     // Fetch bottle count
-    fetch("https://flaskreact-production-d646.up.railway.app/bottles_inventory")
+    fetch("http://localhost:5000/bottles_inventory")
       .then((res) => res.json())
       .then((data) => setBottles(data))
       .catch((err) => console.error("Error:", err));
@@ -21,7 +21,7 @@ export function ViewInventory() {
 const handleExport = async () => {
   const token = localStorage.getItem("token");
 
-  const response = await fetch("https://flaskreact-production-d646.up.railway.app/export_inventory", {
+  const response = await fetch("http://localhost:5000/export_inventory", {
     headers: {
       "Authorization": `Bearer ${token}`
     }

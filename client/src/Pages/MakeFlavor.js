@@ -9,8 +9,8 @@ function MakeFlavor() {
 
   // Fetch available flavors from Flask
   useEffect(() => {
-    fetch("https://flaskreact-production-d646.up.railway.app/flavors")
-    //fetch("http://localhost:5000/flavors")
+   //fetch("https://flaskreact-production-d646.up.railway.app/flavors")
+    fetch("http://localhost:5000/flavors")
       .then((res) => res.json())
       .then((data) => setFlavors(data))
       .catch((err) => console.error("Error fetching flavors:", err));
@@ -19,8 +19,8 @@ function MakeFlavor() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem("token");
-    const res = await fetch("https://flaskreact-production-d646.up.railway.app/calculate_flavor", {
-    //const res = await fetch("http://localhost:5000/calculate_flavor", {
+    //const res = await fetch("https://flaskreact-production-d646.up.railway.app/calculate_flavor", {
+   const res = await fetch("http://localhost:5000/calculate_flavor", {
       method: "POST",
       headers: { "Content-Type": "application/json" , "Authorization": `Bearer ${token}`},
       body: JSON.stringify({ flavorname: selectedFlavor, bottles }),
@@ -32,7 +32,7 @@ function MakeFlavor() {
 };
     const handleSaveBatch = async () => {
   const token= localStorage.getItem("token");
-  const res = await fetch("https://flaskreact-production-d646.up.railway.app/save_batch", {
+  const res = await fetch("http://localhost:5000/save_batch", {
     //const res = await fetch("http://localhost:5000/save_batch", {
    
     method: "POST",
