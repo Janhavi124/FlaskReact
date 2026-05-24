@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import API from "../api";
 
 export function Login() {
   const [user_name, setUsername] = useState("");
@@ -10,7 +11,8 @@ export function Login() {
   const handleLogin = async (e) => {
     e.preventDefault();
     
-    const res = await fetch("http://localhost:5000/login", {
+    //const res = await fetch("http://localhost:5000/login", {
+    const res = await fetch(`${API}/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ user_name, password }),

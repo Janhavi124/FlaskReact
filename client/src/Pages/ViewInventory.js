@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import API from "../api";
 
 export function ViewInventory() {
   const [ingredients, setIngredients] = useState([]);
@@ -6,13 +7,17 @@ export function ViewInventory() {
 
   // Fetch ingredients on load
   useEffect(() => {
-    fetch("http://localhost:5000/ingredients_inventory")
+    //fetch("http://localhost:5000/ingredients_inventory")
+    fetch(`${API}/ingredients_inventory`)
+
       .then((res) => res.json())
       .then((data) => setIngredients(data))
       .catch((err) => console.error("Error:", err));
 
     // Fetch bottle count
-    fetch("http://localhost:5000/bottles_inventory")
+    //fetch("http://localhost:5000/bottles_inventory")
+    fetch(`${API}/bottles_inventory`)
+
       .then((res) => res.json())
       .then((data) => setBottles(data))
       .catch((err) => console.error("Error:", err));
@@ -21,7 +26,8 @@ export function ViewInventory() {
 const handleExport = async () => {
   const token = localStorage.getItem("token");
 
-  const response = await fetch("http://localhost:5000/export_inventory", {
+  //const response = await fetch("http://localhost:5000/export_inventory", {
+  const response = await fetch(`${API}/export_inventory`, {
     headers: {
       "Authorization": `Bearer ${token}`
     }

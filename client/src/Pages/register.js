@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import API from "../api";
 
 export function Register() {
   const [user_name, setUsername] = useState("");
@@ -11,7 +12,8 @@ export function Register() {
   const handleRegister = async (e) => {
     e.preventDefault();
     
-    const res = await fetch("http://localhost:5000/register", {
+    //const res = await fetch("http://localhost:5000/register", {
+    const res = await fetch(`${API}/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ user_name, user_email, password }),

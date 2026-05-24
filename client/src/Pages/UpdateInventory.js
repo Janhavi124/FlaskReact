@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import API from "../api";
 
 export function UpdateInventory() {
   const [ingredients, setIngredients] = useState([]);
@@ -6,20 +7,25 @@ export function UpdateInventory() {
 
   // Fetch ingredients on load
   useEffect(() => {
-    fetch("http://localhost:5000/ingredients_inventory")
+    //fetch("http://localhost:5000/ingredients_inventory")
+    fetch(`${API}/ingredients_inventory`)
+
       .then((res) => res.json())
       .then((data) => setIngredients(data))
       .catch((err) => console.error("Error:", err));
 
     // Fetch bottle count
-    fetch("http://localhost:5000/bottles_inventory")
+    //fetch("http://localhost:5000/bottles_inventory")
+    fetch(`${API}/bottles_inventory`)
+
       .then((res) => res.json())
       .then((data) => setBottles(data))
       .catch((err) => console.error("Error:", err));
   }, []);
 
   const updateIngredient = async (ingredientId, newQuantity) => {
-    await fetch("http://localhost:5000/update_ingredient", {
+    //await fetch("http://localhost:5000/update_ingredient", {
+    await fetch(`${API}/update_ingredient`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ingredientId, newQuantity }),
@@ -28,7 +34,8 @@ export function UpdateInventory() {
   };
 
   const updateBottles = async (newCount) => {
-    await fetch("http://localhost:5000/update_bottles", {
+    //await fetch("http://localhost:5000/update_bottles", {
+    await fetch(`${API}/update_bottles`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ newCount }),

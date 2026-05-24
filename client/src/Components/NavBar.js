@@ -1,5 +1,8 @@
-import { Link, useNavigate, useLocation } from "react-router-dom"
-import { useState, useEffect } from "react"
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useState, useEffect } from "react";
+import API from "../api";
+
+
 
 export function NavBar() {
     const [authenticated, setAuthenticated] = useState(false);
@@ -14,8 +17,8 @@ export function NavBar() {
             setAuthenticated(false);
             return;
         }
-
-        fetch("http://localhost:5000/check_auth", {
+        fetch(`${API}/check_auth`, { 
+        //fetch("http://localhost:5000/check_auth", {
             headers: {
                 'Authorization': `Bearer ${token}`
             }

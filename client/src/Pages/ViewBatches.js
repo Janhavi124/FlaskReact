@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import API from "../api";
 
 export function ViewBatches() {
   const [batches, setBatches] = useState([]);
@@ -6,7 +7,9 @@ export function ViewBatches() {
   const [endDate, setEndDate] = useState("");
 
   useEffect(() => {
-    fetch("http://localhost:5000/batches_list")
+    //fetch("http://localhost:5000/batches_list")
+    fetch(`${API}/batches_list`)
+
       .then((res) => res.json())
       .then((data) => {
         console.log("API DATA:", data);
@@ -17,7 +20,8 @@ export function ViewBatches() {
 
   const handleExport = async () => {
     const token = localStorage.getItem("token");
-    const response = await fetch("http://localhost:5000/export_batches", {
+    //const response = await fetch("http://localhost:5000/export_batches", {
+    const response = await fetch(`${API}/export_batches`, {
       headers: { "Authorization": `Bearer ${token}` }
     });
     const blob = await response.blob();
@@ -71,7 +75,7 @@ export function ViewBatches() {
         </label>
         <button onClick={handleClearFilters}>Clear</button>
         <span style={{ color: "#666", fontSize: "0.9rem" }}>
-          Showing {filteredBatches.length} of {batches.length} batches
+          Showing {filteredBatches.length} of {batches.length} 
         </span>
       </div>
 
