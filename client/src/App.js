@@ -11,6 +11,7 @@ import { Register } from './Pages/register';
 import { Layout } from './Layout';
 import '@picocss/pico/css/pico.min.css';
 import './App.css';
+import API from './api'
 
 function AppContent() {
   const navigate = useNavigate();
@@ -26,7 +27,8 @@ function AppContent() {
       return;
     }
 
-    fetch("http://localhost:5000/check_auth", {
+    //fetch("http://localhost:5000/check_auth", {
+    fetch(`${API}/check_auth`, {
       headers: {
         'Authorization': `Bearer ${token}`
       }
