@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import API from "../api";
 
 export function ViewInventory() {
   const [ingredients, setIngredients] = useState([]);
@@ -6,18 +7,42 @@ export function ViewInventory() {
 
   // Fetch ingredients on load
   useEffect(() => {
-    fetch("https://flaskreact-production-6221.up.railway.app/ingredients_inventory")
+    //fetch("http://localhost:5000/ingredients_inventory")
+    fetch(`${API}/ingredients_inventory`)
+
       .then((res) => res.json())
       .then((data) => setIngredients(data))
       .catch((err) => console.error("Error:", err));
 
     // Fetch bottle count
-    fetch("https://flaskreact-production-6221.up.railway.app/bottles_inventory")
+    //fetch("http://localhost:5000/bottles_inventory")
+    fetch(`${API}/bottles_inventory`)
+
       .then((res) => res.json())
       .then((data) => setBottles(data))
       .catch((err) => console.error("Error:", err));
   }, []);
 
+const handleExport = async () => {
+  const token = localStorage.getItem("token");
+
+  //const response = await fetch("http://localhost:5000/export_inventory", {
+  const response = await fetch(`${API}/export_inventory`, {
+    headers: {
+      "Authorization": `Bearer ${token}`
+    }
+  });
+
+  const blob = await response.blob();
+  const url = window.URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "inventory.xlsx";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+};
 
 
   return (
@@ -46,12 +71,22 @@ export function ViewInventory() {
       {bottles && (
         <BottleRow bottle={bottles} />
       )}
+
+          <button
+  onClick={handleExport}
+  style={{
+    marginTop: "1rem",
+    padding: "0.5rem 0.8rem"
+  }}
+>
+  Export
+</button>
     </div>
   );
 }
 
 function IngredientRow({ ingredient, onUpdate }) {
-  const [newQty, setNewQty] = useState("");
+  /*const [newQty, setNewQty] = useState("");*/
 
   return (
     <tr>
@@ -63,7 +98,7 @@ function IngredientRow({ ingredient, onUpdate }) {
 }
 
 function BottleRow({ bottle, onUpdate }) {
-  const [newCount, setNewCount] = useState("");
+  /*const [newCount, setNewCount] = useState("");*/
 
   return (
     <div>

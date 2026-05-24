@@ -1,85 +1,136 @@
 import os
 from dotenv import load_dotenv
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify
 from flask_cors import CORS
-from flask_sqlalchemy import SQLAlchemy
+#from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
+from werkzeug.security import generate_password_hash, check_password_hash
+import jwt
+from datetime import datetime, timedelta
+from functools import wraps
+from models import db, User, Containers, Quantity, Flavor, batches, Ingredient
+import pandas as pd
+from flask import send_file
+from io import BytesIO
+
 load_dotenv()
 
 
 
-app = Flask(
-    __name__,
-    static_folder="build/static",
-    template_folder="build"
-)
+app = Flask(__name__)
+
+'''CORS(app, resources={
+ r"/*": {
+        #"origins": ["https://resplendent-trust-production.up.railway.app", "http://localhost:3000"],
+        "origins": ["http://localhost:3000"],
+        "allow_headers": ["Content-Type", "Authorization"],
+        "methods": ["GET", "POST", "OPTIONS"]
+    }
+})'''
 CORS(app)
-database_url = os.getenv("DATABASE_URL")
+
+database_url = os.getenv("DATABASE_PUBLIC_URL")
+database_secret_key = os.getenv("SECRET_KEY")
 
 # Fix Railway's postgres:// to postgresql://
 if database_url and database_url.startswith("postgres://"):
     database_url = database_url.replace("postgres://", "postgresql://", 1)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
+app.config['SECRET_KEY'] = database_secret_key
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SESSION_COOKIE_SECURE'] = False  # Required for HTTPS - change to true later
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'  # Required for cross-origin
 
 
+#db = SQLAlchemy(app) #instantiate db object
+db.init_app(app)
 
-@app.route("/")
-def serve():
-    return send_from_directory(app.template_folder, "index.html")
+# JWT HELPER
+def generate_token(user_id):
+    payload = {
+        'user_id': user_id,
+        'exp': datetime.utcnow() + timedelta(days=7)
+    }
+    return jwt.encode(payload, app.config['SECRET_KEY'], algorithm='HS256')
 
-
-
-db = SQLAlchemy(app) #instantiate db object
-
-
-class Flavor(db.Model):
-   __tablename__ = 'flavors'
-   flavorid = db.Column(db.Integer, primary_key=True)
-   flavorname = db.Column(db.String(100))
-   date_added = db.Column(db.Date)
-   quantity = db.relationship('Quantity', back_populates='flavor', cascade='all, delete-orphan')
-
-class Ingredient(db.Model):
-   __tablename__ = 'ingredients'
-   ingredientid = db.Column(db.Integer, primary_key=True)
-   ingredientname = db.Column(db.String(400))
-   availablequantity = db.Column(db.Float)
-   date_added = db.Column(db.Date)
-   quantity = db.relationship('Quantity', back_populates='ingredient', cascade='all, delete-orphan')
-
-
-class Quantity(db.Model):
-    __tablename__ = 'quantity'
-    id = db.Column(db.Integer, primary_key=True)
-    flavorid = db.Column(db.Integer, db.ForeignKey('flavors.flavorid'))
-    ingredientid = db.Column(db.Integer, db.ForeignKey('ingredients.ingredientid'))
-    date_added = db.Column(db.Date)
-    date_updated = db.Column(db.Date)
-    baseamount = db.Column(db.Float)
-    unit =db.Column(db.String(10))
-
-    # Relationships (many-to-one)
-    flavor = db.relationship('Flavor', back_populates='quantity')
-    ingredient = db.relationship('Ingredient', back_populates='quantity')
-
-class batches(db.Model):
-    __tablename__ = 'batches'
-    batchid = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    batchnumber = db.Column(db.String(100), unique=True)
-    flavorid = db.Column(db.Integer, db.ForeignKey('flavors.flavorid'))
-    bottles = db.Column(db.Integer)
-    date_created = db.Column(db.DateTime, default=datetime.utcnow)
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = request.headers.get('Authorization')
+        
+        if not token:
+            return jsonify({'error': 'Token is missing'}), 401
+        
+        try:
+            if token.startswith('Bearer '):
+                token = token[7:]
+            
+            data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
+            current_user = User.query.get(data['user_id'])
+            
+            if not current_user:
+                return jsonify({'error': 'Invalid token'}), 401
+                
+        except jwt.ExpiredSignatureError:
+            return jsonify({'error': 'Token has expired'}), 401
+        except jwt.InvalidTokenError:
+            return jsonify({'error': 'Invalid token'}), 401
+        
+        return f(current_user, *args, **kwargs)
     
-    flavor = db.relationship('Flavor', backref='batches')
+    return decorated
 
-class Containers(db.Model):
-   __tablename__ = 'containers'
-   containerid = db.Column(db.Integer, primary_key=True)
-   containername = db.Column(db.String(100))
-   availablecount = db.Column(db.Integer)
-   date_updated = db.Column(db.Date)
+# AUTH ROUTES
+@app.route('/register', methods=['POST'])
+def register():
+    data = request.get_json()
+    user_name = data.get('user_name')
+    user_email = data.get('user_email')
+    password = data.get('password')
+    
+    if User.query.filter_by(user_name=user_name).first():
+        return jsonify({'error': 'Username already exists'}), 400
+    
+    if User.query.filter_by(user_email=user_email).first():
+        return jsonify({'error': 'Email already exists'}), 400
+    
+    new_user = User(user_name=user_name, user_email=user_email)
+    new_user.set_password(password)
+    
+    db.session.add(new_user)
+    db.session.commit()
+    
+    return jsonify({'success': True, 'message': 'User registered successfully'})
+
+@app.route('/login', methods=['POST'])
+def login():
+    data = request.get_json()
+    user_name = data.get('user_name')
+    password = data.get('password')
+    
+    user = User.query.filter_by(user_name=user_name).first()
+    
+    if user and user.check_password(password):
+        token = generate_token(user.user_id)
+        return jsonify({
+            'success': True,
+            'token': token,
+            'user_name': user.user_name
+        })
+    
+    return jsonify({'error': 'Invalid username or password'}), 401
+
+@app.route('/check_auth', methods=['GET'])
+@token_required
+def check_auth(current_user):
+    return jsonify({
+        'authenticated': True,
+        'user_name': current_user.user_name
+    })
+
+# Keep all your other routes below (flavors, ingredients, etc.)
 
 
 def generate_batch_number(flavorname, date_created):
@@ -95,7 +146,6 @@ def generate_batch_number(flavorname, date_created):
     serial = str(count + 1).zfill(6)  # 001, 002, etc.
     
     return f"{date_str}-{flavorname}-{serial}"
-
 
 
 @app.route('/flavors')
@@ -189,7 +239,9 @@ def calculate_flavor():
 
 
 @app.route('/save_batch', methods=['POST'])
-def save_batch():
+@token_required
+def save_batch(current_user):
+    print("Inside save_batch, current_user:", current_user)
     data = request.get_json()
     flavorname = data.get('flavorname')
     bottles = data.get('bottles')
@@ -230,6 +282,7 @@ def save_batch():
         batchnumber=batch_number,
         flavorid=flavor.flavorid,
         bottles=bottles,
+        user_id= current_user.user_id,
         date_created=now.date()
     )
     
@@ -242,13 +295,29 @@ def save_batch():
         "message": f"Batch {batch_number} saved successfully"
     })
 
-@app.route('/ingredients_inventory')
+@app.route('/batches_list', methods=['GET'])
+def get_batches_list():
+    
+    data = db.session.query(batches).all()
+    result = []
+    for d in data:
+        result.append({
+            "batchid": d.batchid,
+            "batchnumber": d.batchnumber,
+            "flavorname": d.flavor.flavorname,
+            "user_name": d.user.user_name,
+            "bottles": d.bottles,
+            "date_created": d.date_created
+        })
+    return jsonify(result)
+
+@app.route('/ingredients_inventory', methods=['GET'])
 def get_ingredients_inventory():
     data = db.session.query(Ingredient).all()
     result = [{"id": i.ingredientid, "name": i.ingredientname, "available": i.availablequantity} for i in data]
     return jsonify(result)
 
-@app.route('/bottles_inventory')
+@app.route('/bottles_inventory', methods=['GET'])
 def get_bottles_inventory():
     bottle = Containers.query.first()
     return jsonify({"count": bottle.availablecount if bottle else 0})
@@ -278,16 +347,62 @@ def update_bottles():
         return jsonify({"success": True})
     return jsonify({"error": "Bottle record not found"}), 404
 
+@app.route("/export_batches", methods=["GET"])
+def export_batches():
+    batchesList = db.session.query(batches).all()
 
-# Serve React routes (VERY IMPORTANT for SPA)
-@app.route("/<path:path>")
-def static_proxy(path):
-    file_path = os.path.join(app.template_folder, path)
+    data = []
+    for batch in batchesList:
+        data.append({
+            "Batch ID": batch.batchid,
+            "Batch Number": batch.batchnumber,
+            "Flavor ID": batch.flavorid,
+            "Flavor": batch.flavor.flavorname,
+            "User": batch.user.user_id,
+            "Bottles": batch.bottles,
+            "Date Created": batch.date_created
+        })
 
-    if os.path.exists(file_path):
-        return send_from_directory(app.template_folder, path)
+    
+    df = pd.DataFrame(data)
 
-    return send_from_directory(app.template_folder, "index.html")
+    output = BytesIO()
+    df.to_excel(output, index=False, engine="openpyxl")
+    output.seek(0)
+
+    return send_file(
+        output,
+        as_attachment=True,
+        download_name="batches.xlsx",
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+
+
+@app.route("/export_inventory", methods=["GET"])
+def export_inventory():
+    ingredientList = db.session.query(Ingredient).all()
+
+    data = []
+    for ing in ingredientList:
+        data.append({
+            "Ingredient": ing.ingredientname,
+            "Quantity": ing.availablequantity
+        })
+
+    
+    df = pd.DataFrame(data)
+
+    output = BytesIO()
+    df.to_excel(output, index=False, engine="openpyxl")
+    output.seek(0)
+
+    return send_file(
+        output,
+        as_attachment=True,
+        download_name="ingredients.xlsx",
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+
 
 if __name__ == "__main__":
     app.run(debug=True)
